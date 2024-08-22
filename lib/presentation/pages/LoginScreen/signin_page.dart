@@ -9,7 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+// final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 final TextEditingController _usernameController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
 Future<void> _signIn(BuildContext context) async {
@@ -61,7 +61,7 @@ class _SignInState extends State<SignIn> {
 
   Widget _buildUsernameTF() {
     return Form(
-      key: _formKey,
+      // key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -323,7 +323,7 @@ class _SignInState extends State<SignIn> {
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: SystemUiOverlayStyle.dark,
           child: Form(
-            key: _formKey,
+            // key: _formKey,
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: Stack(
