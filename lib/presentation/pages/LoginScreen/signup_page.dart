@@ -9,13 +9,13 @@ final TextEditingController _emailController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
 final TextEditingController _usernameController = TextEditingController();
 
-final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+// final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 Future<void> _signUp(BuildContext context) async {
   final email = _emailController.text.trim();
   final password = _passwordController.text.trim();
   final username = _usernameController.text.trim();
 
-  if (_formKey.currentState?.validate() ?? false) {
+  // if (_formKey.currentState?.validate() ?? false) {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -50,7 +50,7 @@ Future<void> _signUp(BuildContext context) async {
         ),
       );
     }
-  }
+  // }
 }
 
 class SignupPage extends StatefulWidget {
@@ -65,7 +65,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Widget _buildEmail() {
     return Form(
-      key: _formKey,
+      // key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -260,7 +260,7 @@ class _SignupPageState extends State<SignupPage> {
         appBar: AppBar(),
         backgroundColor: Colors.transparent,
         body: Form(
-          key: _formKey,
+          // key: _formKey,
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SafeArea(
