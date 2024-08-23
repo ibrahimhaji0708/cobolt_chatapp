@@ -1,8 +1,9 @@
+import 'package:cobolt_chatapp/presentation/bloc/chat_bloc.dart';
 import 'package:cobolt_chatapp/presentation/pages/HomeScreen/chat_screen.dart';
 import 'package:cobolt_chatapp/presentation/pages/LoginScreen/login_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +15,14 @@ void main() async {
       projectId: "cobolt-chat",
     ),
   );
-  runApp(const CoboltChat());
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => ChatBloc()),
+      ],
+      child: const CoboltChat(),
+    ),
+  );
 }
 
 class CoboltChat extends StatefulWidget {
@@ -28,24 +36,40 @@ class _CoboltChatState extends State<CoboltChat> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Cobolt Chat',
-      theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 93, 95, 240),
-        //hintColor: const Color(0xFFFEF9EB),
-      ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          }
-          if (snapshot.hasData) {
-            return const ChatScreen();
-          }
-          return const LoginPage();
-        },
-      ),
+        debugShowCheckedModeBanner: false,
+        title: 'Cobolt Chat',
+        theme: ThemeData(
+          primaryColor: const Color.fromARGB(255, 93, 95, 240),
+          //hintColor: const Color(0xFFFEF9EB),
+        ),
+        home: const AuthCheck());
+  }
+}
+
+class AuthCheck extends StatelessWidget {
+  const AuthCheck({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, state) {
+        if (state is AuthenticatedState) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatScreen()),
+          );
+        } else if (state is UnauthenticatedState) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        } else if (state is ChatErrorState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('An error occurred!')),
+          );
+        }
+      },
+      child: const LoginPage(),
     );
   }
 }

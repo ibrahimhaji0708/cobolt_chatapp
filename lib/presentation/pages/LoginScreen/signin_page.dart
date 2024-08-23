@@ -24,14 +24,11 @@ Future<void> _signIn(BuildContext context) async {
 
     User? user = userCredential.user;
 
-    // Example: Print user ID to the console
     print('User signed in: ${user?.uid}');
 
-    // Navigate to ChatScreen
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const ChatScreen()));
   } catch (e) {
-    // Handle errors
     print(e);
     showDialog(
       context: context,

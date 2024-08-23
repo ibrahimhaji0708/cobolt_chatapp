@@ -16,40 +16,38 @@ Future<void> _signUp(BuildContext context) async {
   final username = _usernameController.text.trim();
 
   // if (_formKey.currentState?.validate() ?? false) {
-    try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+  try {
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user?.uid)
-          .set({
-        'username': username,
-        'email': email,
-      });
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user?.uid)
+        .set({
+      'username': username,
+      'email': email,
+    });
 
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const ChatScreen()));
-    } catch (e) {
-      // Handle errors
-      print(e);
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Sign Up Failed'),
-          content: Text(e.toString()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const ChatScreen()));
+  } catch (e) {
+    print(e);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Up Failed'),
+        content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
   // }
 }
 
@@ -110,13 +108,6 @@ class _SignupPageState extends State<SignupPage> {
       ),
     );
   }
-
-  //
-  // bool _validateEmail(String email) {
-  //   // return _formKey.currentState?.validate() ?? false;
-  //   final emailRegExp = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$");
-  //   return emailRegExp.hasMatch(email);
-  // }
 
   Widget _buildUsernameTF() {
     return Column(
