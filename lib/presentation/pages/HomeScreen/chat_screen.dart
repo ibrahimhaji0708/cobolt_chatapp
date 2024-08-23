@@ -1,4 +1,6 @@
 import 'dart:io'; // Import this to use exit function
+import 'package:cobolt_chatapp/presentation/pages/LoginScreen/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -11,6 +13,15 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   Future<bool> _onWillPop() async {
     exit(0);
+  }
+
+  void _logout() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const LoginPage(),
+      ),
+    );
   }
 
   @override
@@ -39,6 +50,12 @@ class _ChatScreenState extends State<ChatScreen> {
             IconButton(
               onPressed: () {},
               icon: const Icon(Icons.search),
+              iconSize: 30.0,
+              color: Colors.white,
+            ),
+            IconButton(
+              onPressed: _logout,
+              icon: const Icon(Icons.logout),
               iconSize: 30.0,
               color: Colors.white,
             ),

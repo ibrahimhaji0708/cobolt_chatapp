@@ -58,6 +58,7 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   bool _rememberMe = false;
+  var _obscureText = false;
 
   Widget _buildUsernameTF() {
     return Form(
@@ -130,12 +131,25 @@ class _SignInState extends State<SignIn> {
               color: Colors.black54,
               fontFamily: 'OpenSans',
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: EdgeInsets.only(top: 14.0),
-              prefixIcon: Icon(
+              contentPadding: const EdgeInsets.only(top: 14.0),
+              prefixIcon: const Icon(
                 Icons.lock,
                 color: Color.fromARGB(255, 31, 33, 133),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureText ? Icons.visibility_off : Icons.visibility,
+                  color: _obscureText
+                      ? Colors.grey
+                      : const Color.fromARGB(255, 31, 33, 133),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureText = !_obscureText;
+                  });
+                },
               ),
               hintText: 'Enter your Password',
               hintStyle: kHintTextStyle,
