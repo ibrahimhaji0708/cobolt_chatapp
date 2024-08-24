@@ -34,3 +34,8 @@ class AuthenticatedState extends ChatState {}
 class UnauthenticatedState extends ChatState {}
 
 class AuthLoadingState extends ChatState {}
+
+//
+class ChatAddContactSuccessState extends ChatState {}
+
+// class NavigateToContactsState extends ChatState {}

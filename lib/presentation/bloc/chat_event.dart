@@ -30,3 +30,9 @@ class NavigateToSignUpPageEvent extends ChatEvent {}
 class LoginButtonClickedEvent extends ChatEvent {}
 
 class SignUpButtonClickedEvent extends ChatEvent {}
+
+//
+class AddContactEvent extends ChatEvent {}
+
+class NavigateToContactsEvent extends ChatEvent {}
+

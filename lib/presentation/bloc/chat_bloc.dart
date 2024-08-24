@@ -16,6 +16,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<CreateAccountButtonClickedEvent>(_onCreateAccountButtonClickedEvent);
     on<NavigateToSignUpPageEvent>(_onNavigateToSignUpPageEvent);
     on<SignUpButtonClickedEvent>(_onSignUpButtonClickedEvent);
+    // on<AddContactEvent>(_addContactEvent);
+    on<NavigateToContactsEvent>(_navigateToContactsEvent);
   }
 
   FutureOr<void> _onChatInitialEvent(
@@ -34,15 +36,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               email: event.email, password: event.password);
 
       if (userCredential.user != null) {
-        emit(AuthenticatedState()); // Emit authenticated state
-        // Here, you would load chat messages or transition to the ChatScreen
-        emit(ChatLoadedSuccessState(
-            chatMessages: [])); // Placeholder for actual chat messages
+        emit(AuthenticatedState());
+        emit(ChatLoadedSuccessState(chatMessages: const []));
       } else {
         emit(UnauthenticatedState());
       }
     } catch (e) {
-      emit(ChatErrorState()); // Handle authentication error
+      emit(ChatErrorState());
     }
   }
 
@@ -56,21 +56,28 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   FutureOr<void> _onCreateAccountButtonClickedEvent(
       CreateAccountButtonClickedEvent event, Emitter<ChatState> emit) async {
     emit(AuthLoadingState());
-    emit(
-        AuthenticatedState()); // Emit authenticated state after account creation
+    emit(AuthenticatedState());
   }
 
   FutureOr<void> _onNavigateToSignUpPageEvent(
-      NavigateToSignUpPageEvent event, Emitter<ChatState> emit) {
-    // Emit state to navigate to the signup page
+      NavigateToSignUpPageEvent event, Emitter<ChatState> emit) async {
     emit(ChatActionState());
   }
 
   FutureOr<void> _onSignUpButtonClickedEvent(
       SignUpButtonClickedEvent event, Emitter<ChatState> emit) async {
     emit(AuthLoadingState());
-    // Implement signup logic
-    emit(
-        AuthenticatedState()); // Emit authenticated state after successful signup
+    emit(AuthenticatedState());
+  }
+
+  // FutureOr<void> _addContactEvent(
+  //     AddContactEvent event, Emitter<ChatState> emit) async {
+  //   emit(NavigateToContactsState());
+  // }
+
+  FutureOr<void> _navigateToContactsEvent(
+      NavigateToContactsEvent event, Emitter<ChatState> emit) async {
+    print("NavigateToContactsEvent triggered");
+    emit(ChatAddContactSuccessState());
   }
 }

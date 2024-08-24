@@ -1,6 +1,7 @@
 import 'package:cobolt_chatapp/presentation/pages/HomeScreen/chat_screen.dart';
 import 'package:cobolt_chatapp/presentation/pages/LoginScreen/signup_page.dart';
 import 'package:cobolt_chatapp/core/constants/constants.dart';
+import 'package:google_sign_in/google_sign_in.dart'; //googlesign_in
 // import 'package:cobolt_chatapp/utilities/user_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,7 @@ final FirebaseAuth _auth = FirebaseAuth.instance;
 // final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 final TextEditingController _usernameController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
+
 Future<void> _signIn(BuildContext context) async {
   final username = _usernameController.text.trim();
   final password = _passwordController.text.trim();
@@ -34,6 +36,49 @@ Future<void> _signIn(BuildContext context) async {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Login Failed'),
+        content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//googlesignIN
+Future<void> _signInWithGoogle(BuildContext context) async {
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+    if (googleUser != null) {
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      print('User signed in with Google: ${user?.uid}');
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const ChatScreen()),
+      );
+    }
+  } catch (e) {
+    print(e);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Google Sign-In Failed'),
         content: Text(e.toString()),
         actions: [
           TextButton(
@@ -114,16 +159,13 @@ class _SignInState extends State<SignIn> {
           height: 60.0,
           child: TextFormField(
             controller: _passwordController,
-            obscureText: true,
+            obscureText: _obscureText, // Update here to use _obscureText
             validator: (value) {
               if (value == null || value.trim().length < 6) {
-                return 'Password must be atleast 6 characters long.';
+                return 'Password must be at least 6 characters long.';
               }
               return null;
             },
-            // onSaved: (value) {
-            //   _enteredPassword = value!;
-            // },
             style: const TextStyle(
               color: Colors.black54,
               fontFamily: 'OpenSans',
@@ -282,15 +324,11 @@ class _SignInState extends State<SignIn> {
         children: <Widget>[
           _buildSocialBtn(
             () => print('Login with Facebook'),
-            const AssetImage(
-              'assets/logos/facebook.jpg',
-            ),
+            const AssetImage('assets/logos/facebook.jpg'),
           ),
           _buildSocialBtn(
-            () => print('Login with Google'),
-            const AssetImage(
-              'assets/logos/google.jpg',
-            ),
+            () => _signInWithGoogle(context),
+            const AssetImage('assets/logos/google.jpg'),
           ),
         ],
       ),
@@ -357,7 +395,8 @@ class _SignInState extends State<SignIn> {
                     ),
                   ),
                   //const SizedBox(),
-                  SingleChildScrollView( //rem if necessary 
+                  SingleChildScrollView(
+                    //rem if necessary
                     child: Container(
                       //height: double.infinity,
                       padding: const EdgeInsets.symmetric(

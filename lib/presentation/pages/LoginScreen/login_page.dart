@@ -29,18 +29,18 @@ class _LoginPageState extends State<LoginPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 31, 33, 133),
-          title: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.logout_rounded),
-              ),
-              const SizedBox(width: 8.0),
-              // Text('Exit'),
-            ],
-          ),
+          // title: Row(
+          //   children: [
+          //     IconButton(
+          //       onPressed: () {
+          //         Navigator.pop(context);
+          //       },
+          //       icon: const Icon(Icons.logout_rounded),
+          //     ),
+          //     const SizedBox(width: 8.0),
+          //     // Text('Exit'),
+          //   ],
+          // ),
         ),
         backgroundColor: Colors.transparent,
         body: SafeArea(
