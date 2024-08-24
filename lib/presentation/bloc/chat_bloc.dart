@@ -50,7 +50,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       LogoutEvent event, Emitter<ChatState> emit) async {
     await FirebaseAuth.instance.signOut();
     emit(ChatLogoutState());
-    emit(UnauthenticatedState()); // Go back to login state
+    emit(UnauthenticatedState());
   }
 
   FutureOr<void> _onCreateAccountButtonClickedEvent(
