@@ -7,15 +7,13 @@ import 'package:flutter/material.dart';
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final TextEditingController _emailController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
-final TextEditingController _usernameController = TextEditingController();
+final TextEditingController _phoneNumberController = TextEditingController();
 
-// final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 Future<void> _signUp(BuildContext context) async {
   final email = _emailController.text.trim();
   final password = _passwordController.text.trim();
-  final username = _usernameController.text.trim();
+  final phonenumber = _phoneNumberController.text.trim();
 
-  // if (_formKey.currentState?.validate() ?? false) {
   try {
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -26,7 +24,7 @@ Future<void> _signUp(BuildContext context) async {
         .collection('users')
         .doc(userCredential.user?.uid)
         .set({
-      'username': username,
+      'username': phonenumber,
       'email': email,
     });
 
@@ -51,6 +49,102 @@ Future<void> _signUp(BuildContext context) async {
   // }
 }
 
+//phonenumber verification
+Future<void> _signInWithPhoneNumber(BuildContext context) async {
+  final phoneNumber = _phoneNumberController.text.trim();
+
+  try {
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const ChatScreen()));
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Verification Failed'),
+            content: Text(e.message ?? 'Unknown error occurred'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            String smsCode = '';
+            return AlertDialog(
+              title: const Text('Enter SMS Code'),
+              content: TextField(
+                onChanged: (value) {
+                  smsCode = value;
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    if (smsCode.isEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Invalid Code'),
+                          content:
+                              const Text('Please enter the SMS code received.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      PhoneAuthCredential credential =
+                          PhoneAuthProvider.credential(
+                        verificationId: verificationId,
+                        smsCode: smsCode,
+                      );
+                      await FirebaseAuth.instance
+                          .signInWithCredential(credential);
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const ChatScreen(),
+                      ));
+                    }
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+  } catch (e) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text('Error: ${e.toString()}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -63,7 +157,6 @@ class _SignupPageState extends State<SignupPage> {
 
   Widget _buildEmail() {
     return Form(
-      // key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -109,12 +202,12 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildUsernameTF() {
+  Widget _buildPhoneNumberTF() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         const Text(
-          'Username',
+          'Phone Number',
           style: kLabelStyle,
         ),
         const SizedBox(height: 10.0),
@@ -123,10 +216,11 @@ class _SignupPageState extends State<SignupPage> {
           decoration: kBoxDecorationStyle,
           height: 60.0,
           child: TextFormField(
-            controller: _usernameController,
+            controller: _phoneNumberController,
+            keyboardType: TextInputType.phone,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a username';
+                return 'Please enter your phone number';
               }
               return null;
             },
@@ -138,10 +232,10 @@ class _SignupPageState extends State<SignupPage> {
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(top: 14.0),
               prefixIcon: Icon(
-                Icons.person,
+                Icons.phone,
                 color: Color.fromARGB(255, 31, 33, 133),
               ),
-              hintText: 'Enter your Username',
+              hintText: 'Enter your Phone Number',
               hintStyle: kHintTextStyle,
             ),
           ),
@@ -205,7 +299,7 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildLoginBttn() {
+  Widget _buildSigninBtn() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25.0),
       width: double.infinity,
@@ -213,7 +307,11 @@ class _SignupPageState extends State<SignupPage> {
         padding: const EdgeInsets.all(15.0),
         child: ElevatedButton(
           onPressed: () {
-            _signUp(context);
+            if (_phoneNumberController.text.isNotEmpty) {
+              _signInWithPhoneNumber(context);
+            } else {
+              _signUp(context);
+            }
           },
           style: const ButtonStyle(),
           child: const Text(
@@ -251,7 +349,6 @@ class _SignupPageState extends State<SignupPage> {
         appBar: AppBar(),
         backgroundColor: Colors.transparent,
         body: Form(
-          // key: _formKey,
           child: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SafeArea(
@@ -287,10 +384,10 @@ class _SignupPageState extends State<SignupPage> {
                     //
                     _buildEmail(),
                     const SizedBox(height: 8.5),
-                    _buildUsernameTF(),
+                    _buildPhoneNumberTF(),
                     const SizedBox(height: 8.5),
                     _buildPasswordTF(),
-                    _buildLoginBttn(),
+                    _buildSigninBtn(),
                   ],
                 ),
               ),
