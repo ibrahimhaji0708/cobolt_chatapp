@@ -1,4 +1,5 @@
 import 'package:cobolt_chatapp/presentation/pages/HomeScreen/chat_screen.dart';
+import 'package:cobolt_chatapp/presentation/pages/HomeScreen/contacts_screen.dart';
 import 'package:cobolt_chatapp/presentation/pages/LoginScreen/signup_page.dart';
 import 'package:cobolt_chatapp/core/constants/constants.dart';
 import 'package:google_sign_in/google_sign_in.dart'; //googlesign_in
@@ -28,8 +29,10 @@ Future<void> _signIn(BuildContext context) async {
 
     print('User signed in: ${user?.uid}');
 
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const ChatScreen()));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => ChatScreen(
+              contact: Contact(name: '', phoneNumber: ''),
+            )));
   } catch (e) {
     print(e);
     showDialog(
@@ -70,7 +73,10 @@ Future<void> _signInWithGoogle(BuildContext context) async {
       print('User signed in with Google: ${user?.uid}');
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const ChatScreen()),
+        MaterialPageRoute(
+            builder: (context) => ChatScreen(
+                  contact: Contact(name: '', phoneNumber: ''),
+                )),
       );
     }
   } catch (e) {

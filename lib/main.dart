@@ -1,5 +1,6 @@
 import 'package:cobolt_chatapp/presentation/bloc/chat_bloc.dart';
 import 'package:cobolt_chatapp/presentation/pages/HomeScreen/chat_screen.dart';
+import 'package:cobolt_chatapp/presentation/pages/HomeScreen/contacts_screen.dart';
 import 'package:cobolt_chatapp/presentation/pages/LoginScreen/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,7 @@ class AuthCheck extends StatelessWidget {
         if (state is AuthenticatedState) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const ChatScreen()),
+            MaterialPageRoute(builder: (context) => ChatScreen(contact: Contact(name: '', phoneNumber: ''),)),
           );
         } else if (state is UnauthenticatedState) {
           Navigator.pushReplacement(

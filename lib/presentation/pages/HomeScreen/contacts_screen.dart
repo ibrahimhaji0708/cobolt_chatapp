@@ -2,24 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cobolt_chatapp/presentation/pages/HomeScreen/chat_screen.dart';
+
+class Contact {
+  final String name;
+  final String phoneNumber;
+
+  Contact({required this.name, required this.phoneNumber});
+}
 
 Future<List<Contact>> getRegisteredContacts() async {
   List<Contact> registeredContacts = [];
 
-  // Fetch all contacts
-  Iterable<Contact> contacts = await ContactsService.getContacts();
+  Iterable<Contact> contacts =
+      (await ContactsService.getContacts()) as Iterable<Contact>;
 
-  for (Contact contact in contacts) {
-    for (Item phone in contact.phones!) {
-      String normalizedPhoneNumber = phone.value!.replaceAll(RegExp(r'\D'), '');
+  for (var contact in contacts) {
+    if (contact.phoneNumber.isNotEmpty) {
+      for (var phone in contacts) {
+        String normalizedPhoneNumber =
+            phone.phoneNumber.replaceAll(RegExp(r'\D'), '');
 
-      var querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('phoneNumber', isEqualTo: normalizedPhoneNumber)
-          .get();
+        var querySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .where('phoneNumber', isEqualTo: normalizedPhoneNumber)
+            .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        registeredContacts.add(contact);
+        if (querySnapshot.docs.isNotEmpty) {
+          registeredContacts.add(Contact(
+            name: contact.name,
+            phoneNumber: phone.phoneNumber,
+          ));
+        }
       }
     }
   }
@@ -27,6 +41,7 @@ Future<List<Contact>> getRegisteredContacts() async {
   return registeredContacts;
 }
 
+// Function to request contact permission
 Future<bool> requestContactPermission() async {
   var status = await Permission.contacts.status;
   if (!status.isGranted) {
@@ -36,7 +51,7 @@ Future<bool> requestContactPermission() async {
 }
 
 class ContactsScreen extends StatefulWidget {
-  const ContactsScreen({super.key});
+  const ContactsScreen({super.key, required List contacts});
 
   @override
   State<ContactsScreen> createState() => _ContactsScreenState();
@@ -44,17 +59,25 @@ class ContactsScreen extends StatefulWidget {
 
 class _ContactsScreenState extends State<ContactsScreen> {
   late Future<List<Contact>> _registeredContacts;
+  bool _hasPermission = false;
 
   @override
   void initState() {
     super.initState();
-    _registeredContacts = requestContactPermission().then((granted) {
-      if (granted) {
-        return getRegisteredContacts();
-      } else {
-        return [];
-      }
-    });
+    _checkPermissionAndFetchContacts();
+  }
+
+  void _checkPermissionAndFetchContacts() async {
+    _hasPermission = await requestContactPermission();
+    if (_hasPermission) {
+      setState(() {
+        _registeredContacts = getRegisteredContacts();
+      });
+    } else {
+      setState(() {
+        _registeredContacts = Future.value([]);
+      });
+    }
   }
 
   @override
@@ -62,48 +85,52 @@ class _ContactsScreenState extends State<ContactsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'Contacts',
-          style: TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28.0),
         ),
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          iconSize: 30.0,
-          color: Colors.white,
-        ),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
-      body: FutureBuilder<List<Contact>>(
-        future: _registeredContacts,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading contacts.'));
-          } else if (snapshot.data!.isEmpty) {
-            return const Center(child: Text('No registered contacts found.'));
-          }
+      body: _hasPermission
+          ? FutureBuilder<List<Contact>>(
+              future: _registeredContacts,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading contacts.'));
+                } else if (snapshot.data!.isEmpty) {
+                  return const Center(
+                      child: Text('No registered contacts found.'));
+                }
 
-          final contacts = snapshot.data!;
+                final contacts = snapshot.data!;
 
-          return ListView.builder(
-            itemCount: contacts.length,
-            itemBuilder: (context, index) {
-              final contact = contacts[index];
-              return ListTile(
-                title: Text(contact.displayName ?? 'No name'),
-                subtitle: Text(contact.phones!.isNotEmpty
-                    ? contact.phones!.first.value ?? ''
-                    : 'No phone number'),
-                onTap: () {
-                  //chat starty
-                },
-              );
-            },
-          );
-        },
-      ),
+                return ListView.builder(
+                  itemCount: contacts.length,
+                  itemBuilder: (context, index) {
+                    final contact = contacts[index];
+                    return ListTile(
+                      title: Text(contact.name),
+                      subtitle: Text(contact.phoneNumber),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(contact: contact),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            )
+          : Center(
+              child: ElevatedButton(
+                onPressed: _checkPermissionAndFetchContacts,
+                child: const Text('Allow Contact Access'),
+              ),
+            ),
     );
   }
 }

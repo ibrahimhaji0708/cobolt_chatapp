@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cobolt_chatapp/core/constants/constants.dart';
 import 'package:cobolt_chatapp/presentation/pages/HomeScreen/chat_screen.dart';
+import 'package:cobolt_chatapp/presentation/pages/HomeScreen/contacts_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +13,8 @@ final TextEditingController _phoneNumberController = TextEditingController();
 Future<void> _signUp(BuildContext context) async {
   final email = _emailController.text.trim();
   final password = _passwordController.text.trim();
-  final phonenumber = _phoneNumberController.text.trim();
+  // final username = _usernameController.text.trim();
+  final phoneNumber = _phoneNumberController.text.trim().replaceAll(RegExp(r'\D'), '');
 
   try {
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -20,16 +22,14 @@ Future<void> _signUp(BuildContext context) async {
       password: password,
     );
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userCredential.user?.uid)
-        .set({
-      'username': phonenumber,
+    await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
+      // 'username': username,
       'email': email,
+      'phoneNumber': phoneNumber, // Storing the normalized phone number
     });
 
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const ChatScreen()));
+        MaterialPageRoute(builder: (context) => ChatScreen(contact: Contact(name: '', phoneNumber: phoneNumber),)));
   } catch (e) {
     print(e);
     showDialog(
@@ -46,8 +46,8 @@ Future<void> _signUp(BuildContext context) async {
       ),
     );
   }
-  // }
 }
+
 
 //phonenumber verification
 Future<void> _signInWithPhoneNumber(BuildContext context) async {
@@ -59,7 +59,7 @@ Future<void> _signInWithPhoneNumber(BuildContext context) async {
       verificationCompleted: (PhoneAuthCredential credential) async {
         await FirebaseAuth.instance.signInWithCredential(credential);
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ChatScreen()));
+            MaterialPageRoute(builder: (context) => ChatScreen(contact: Contact(name: '', phoneNumber: ''),)));
       },
       verificationFailed: (FirebaseAuthException e) {
         showDialog(
@@ -115,7 +115,7 @@ Future<void> _signInWithPhoneNumber(BuildContext context) async {
                       await FirebaseAuth.instance
                           .signInWithCredential(credential);
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const ChatScreen(),
+                        builder: (context) => ChatScreen(contact: Contact(name: '', phoneNumber: ''),),
                       ));
                     }
                   },

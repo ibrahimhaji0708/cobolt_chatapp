@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, required Contact contact});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -34,7 +34,7 @@ class _ChatScreenState extends State<ChatScreen> {
             print("ChatAddContactSuccessState triggered");
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ContactsScreen()),
+              MaterialPageRoute(builder: (context) => const ContactsScreen(contacts: [],)),
             );
           }
         },
